@@ -3,7 +3,7 @@ package com.aceleradev.nexorder.services;
 import com.aceleradev.nexorder.commons.enums.ProductCategory;
 import com.aceleradev.nexorder.commons.enums.Role;
 import com.aceleradev.nexorder.dtos.order.OrderDTO;
-import com.aceleradev.nexorder.dtos.orderitem.OrderItemDto;
+import com.aceleradev.nexorder.dtos.orderitem.OrderItemDTO;
 import com.aceleradev.nexorder.entities.*;
 import com.aceleradev.nexorder.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -129,7 +129,7 @@ class OrderServiceIntegrationTest {
         request.setEmployeeId(employee.getId());
 
         for (Long productId : productIds) {
-            OrderItemDto item = new OrderItemDto();
+            OrderItemDTO item = new OrderItemDTO();
             item.setProductId(productId);
             item.setQuantity(1);
             request.getItems().add(item);
