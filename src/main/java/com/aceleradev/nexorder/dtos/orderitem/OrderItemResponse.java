@@ -1,6 +1,6 @@
-package com.aceleradev.nexorder.dtos.order;
+package com.aceleradev.nexorder.dtos.orderitem;
 
-public record OrderItemResponseDTO(
+public record OrderItemResponse(
         Long productId,
         String productName,
         Integer quantity,
