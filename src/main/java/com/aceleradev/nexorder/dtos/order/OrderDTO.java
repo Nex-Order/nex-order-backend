@@ -1,6 +1,6 @@
 package com.aceleradev.nexorder.dtos.order;
 
-import com.aceleradev.nexorder.dtos.orderitem.OrderItemDto;
+import com.aceleradev.nexorder.dtos.orderitem.OrderItemDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,12 +14,8 @@ import java.util.List;
 public class OrderDTO {
 
     private String orderStatus;
-
     private Long customerId;
-
     private Long employeeId;
-
-    private List<OrderItemDto> items = new ArrayList<>();
-
+    private List<OrderItemDTO> items = new ArrayList<>();
     private Double total;
 }
