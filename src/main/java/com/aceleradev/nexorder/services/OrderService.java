@@ -1,8 +1,10 @@
 package com.aceleradev.nexorder.services;
 
 import com.aceleradev.nexorder.dtos.order.OrderDTO;
-import com.aceleradev.nexorder.dtos.orderitem.OrderItemDto;
+import com.aceleradev.nexorder.dtos.order.OrderResponse;
+import com.aceleradev.nexorder.dtos.orderitem.OrderItemDTO;
 import com.aceleradev.nexorder.commons.enums.OrderStatus;
+import com.aceleradev.nexorder.dtos.orderitem.OrderItemResponse;
 import com.aceleradev.nexorder.entities.*;
 import com.aceleradev.nexorder.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -48,7 +50,7 @@ public class OrderService {
 
         orderRepository.save(orderEntity);
 
-        for (OrderItemDto dto : orderDTO.getItems()) {
+        for (OrderItemDTO dto : orderDTO.getItems()) {
             Product product = productRepository.findById(dto.getProductId())
                     .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
@@ -77,9 +79,9 @@ public class OrderService {
         orderDTO.setEmployeeId(findOrder.getEmployee().getId());
         orderDTO.setTotal(Math.round(getTotalValue(findOrder.getId()) * 100.00) / 100.00);
 
-        List<OrderItemDto> itemsList = orderItems.stream().
+        List<OrderItemDTO> itemsList = orderItems.stream().
                 map(item -> {
-                    OrderItemDto dto = new OrderItemDto();
+                    OrderItemDTO dto = new OrderItemDTO();
                     dto.setName(item.getProduct().getName());
                     dto.setQuantity(item.getQuantity());
                     dto.setProductId(item.getProduct().getId());
@@ -105,5 +107,44 @@ public class OrderService {
             totalValue += orderItem.getPrice() * orderItem.getQuantity();
         }
         return totalValue;
+    }
+
+    public OrderResponse getOrderResponseById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Order not found"));
+
+        List<OrderItem> items = orderItemRepository.findAllByOrder(order);
+
+        List<OrderItemResponse> itemResponses = items.stream()
+                .map(item -> new OrderItemResponse(
+                        item.getProduct().getId(),
+                        item.getProduct().getName(),
+                        item.getQuantity(),
+                        item.getPrice(),
+                        item.getPrice() * item.getQuantity()
+                ))
+                .toList();
+
+        double total = itemResponses.stream()
+                .mapToDouble(OrderItemResponse::subtotal)
+                .sum();
+
+        return new OrderResponse(
+                order.getId(),
+                order.getOrderStatus().name(),
+                order.getMoment(),
+                order.getCustomer().getId(),
+                order.getCustomer().getName(),
+                order.getEmployee().getId(),
+                order.getEmployee().getName(),
+                itemResponses,
+                total
+        );
+    }
+
+    public OrderResponse createOrderResponse(OrderDTO orderDTO) {
+        Order orderEntity = createOrder(orderDTO);
+        return getOrderResponseById(orderEntity.getId());
     }
 }
