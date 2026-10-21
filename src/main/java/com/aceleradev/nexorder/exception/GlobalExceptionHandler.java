@@ -17,6 +17,15 @@ import java.net.URI;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ApiResponse(
+            responseCode = "400",
+            description = "Request validation error",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemDetail.class)
+            )
+    )
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ProblemDetail> methodArgumentNotValidException(
             MethodArgumentNotValidException ex,
@@ -33,6 +42,15 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+    @ApiResponse(
+            responseCode = "404",
+            description = "Resource not found",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemDetail.class)
+            )
+    )
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ProblemDetail> notFoundException(
@@ -51,6 +69,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ApiResponse(
+            responseCode = "409",
+            description = "Conflict while executing the operation",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemDetail.class)
+            )
+    )
+
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ProblemDetail> conflictException(
             ConflictException ex,
@@ -67,6 +94,15 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
+
+    @ApiResponse(
+            responseCode = "422",
+            description = "Business rule not called",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemDetail.class)
+            )
+    )
 
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ProblemDetail> businessRuleException(
