@@ -2,6 +2,7 @@ package com.aceleradev.nexorder.services;
 
 import com.aceleradev.nexorder.dtos.product.ProductDto;
 import com.aceleradev.nexorder.entities.Product;
+import com.aceleradev.nexorder.exception.NotFoundException;
 import com.aceleradev.nexorder.repositories.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ public class ProductService {
 
     public ProductDto findById(Long id) {
         ProductDto productDto = new ProductDto();
-        Product product = productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found."));
+        Product product = productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found."));
 
         productDto.setName(product.getName());
         productDto.setPrice(product.getPrice());
@@ -74,7 +75,7 @@ public class ProductService {
             return productDto;
 
         } else {
-            throw new RuntimeException("Product not found!");
+            throw new NotFoundException("Product not found!");
         }
 
     }
