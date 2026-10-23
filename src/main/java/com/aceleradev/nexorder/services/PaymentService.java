@@ -6,6 +6,8 @@ import com.aceleradev.nexorder.entities.Customer;
 import com.aceleradev.nexorder.entities.Order;
 import com.aceleradev.nexorder.entities.OrderItem;
 import com.aceleradev.nexorder.entities.Payment;
+import com.aceleradev.nexorder.exception.BusinessRuleException;
+import com.aceleradev.nexorder.exception.NotFoundException;
 import com.aceleradev.nexorder.repositories.CustomerRepository;
 import com.aceleradev.nexorder.repositories.OrderItemRepository;
 import com.aceleradev.nexorder.repositories.OrderRepository;
@@ -43,13 +45,13 @@ public class PaymentService {
             orderRepository.save(order);
             paymentRepository.save(paymentToSave);
         } else {
-            new RuntimeException("Falha ao realizar pagamento");
+            throw new BusinessRuleException("Falha ao realizar pagamento");
         }
     }
 
     private Customer getCustomer(Long customerId) {
         return customerRepository.findById(customerId)
-                .orElseThrow(() -> new EntityNotFoundException("Not Found"));
+                .orElseThrow(() -> new NotFoundException("Not Found"));
     }
 
     private Order getOrder(Long customerID) {
@@ -57,7 +59,7 @@ public class PaymentService {
         return orderList.stream()
                 .filter(it -> it.getOrderStatus() == OrderStatus.WAITING_PAYMENT)
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Nenhum pedido em WAITING_PAYMENT"));
+                .orElseThrow(() -> new NotFoundException("Nenhum pedido em WAITING_PAYMENT"));
     }
 
     private Double getTotalValue(Long customerID) {

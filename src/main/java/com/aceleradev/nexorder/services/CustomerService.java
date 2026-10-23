@@ -4,6 +4,7 @@ import com.aceleradev.nexorder.dtos.customer.CustomerCreateRequest;
 import com.aceleradev.nexorder.dtos.customer.CustomerResponse;
 import com.aceleradev.nexorder.dtos.customer.CustomerUpdateRequest;
 import com.aceleradev.nexorder.entities.Customer;
+import com.aceleradev.nexorder.exception.NotFoundException;
 import com.aceleradev.nexorder.mapper.CustomerMapper;
 import com.aceleradev.nexorder.repositories.CustomerRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,7 +31,7 @@ public class CustomerService {
 
         // Verifica se o customer existe, se não, lança exceção.
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found."));
+                .orElseThrow(() -> new NotFoundException("Customer not found."));
 
         return customerMapper.toResponse(customer);
     }
@@ -48,7 +49,7 @@ public class CustomerService {
 
         // 1. Verifica se o id passado existe no banco.
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found."));
+                .orElseThrow(() -> new NotFoundException("Customer not found."));
 
         // 2. Se existir, atualiza com o mapper, se não, lança uma exceção.
         customerMapper.updateCustomerFromDto(request, customer);
@@ -60,7 +61,7 @@ public class CustomerService {
     public void delete(Long id) {
 
         if (!customerRepository.existsById(id)){
-            throw new EntityNotFoundException("Customer not found.");
+            throw new NotFoundException("Customer not found.");
         }
 
         customerRepository.deleteById(id);
