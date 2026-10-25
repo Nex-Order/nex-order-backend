@@ -1,0 +1,614 @@
+{
+  "project": {
+    "title": "Nex Order Roadmap",
+    "description": "Roadmap do Nex Order: estabilização, padronização, segurança, fluxo de vendas, multi-estabelecimento e produção."
+  },
+  "bodyHeadings": {
+    "context": "Contexto",
+    "tasks": "Tarefas",
+    "acceptance": "Critérios de aceite",
+    "existingComment": "Escopo proposto no roadmap",
+    "estimate": "Estimativa",
+    "points": "pts",
+    "refs": "Refs no doc de avaliação"
+  },
+  "labels": [
+    { "name": "type:bug", "color": "d73a4a", "description": "Algo não funciona como deveria" },
+    { "name": "type:feature", "color": "0e8a16", "description": "Nova funcionalidade" },
+    { "name": "type:refactor", "color": "c5def5", "description": "Melhoria interna sem mudar comportamento" },
+    { "name": "type:security", "color": "b60205", "description": "Segurança, autenticação ou autorização" },
+    { "name": "type:test", "color": "fbca04", "description": "Testes automatizados" },
+    { "name": "type:chore", "color": "ededed", "description": "Infra, build, CI, manutenção" },
+    { "name": "type:docs", "color": "0075ca", "description": "Documentação" },
+    { "name": "area:auth", "color": "5319e7", "description": "Autenticação e autorização" },
+    { "name": "area:orders", "color": "1d76db", "description": "Pedidos" },
+    { "name": "area:payments", "color": "1d76db", "description": "Pagamentos e caixa" },
+    { "name": "area:catalog", "color": "1d76db", "description": "Produtos, categorias e estoque" },
+    { "name": "area:people", "color": "1d76db", "description": "Clientes e funcionários" },
+    { "name": "area:tenancy", "color": "1d76db", "description": "Multi-estabelecimento" },
+    { "name": "area:infra", "color": "1d76db", "description": "Docker, CI, deploy, observabilidade" },
+    { "name": "area:api", "color": "1d76db", "description": "Contrato da API, erros, validação" },
+    { "name": "priority:critical", "color": "b60205", "description": "Bloqueia uso real ou expõe dados" },
+    { "name": "priority:high", "color": "d93f0b", "description": "Importante para a milestone" },
+    { "name": "priority:medium", "color": "fbca04", "description": "Desejável na milestone" },
+    { "name": "priority:low", "color": "c2e0c6", "description": "Pode escorregar" }
+  ],
+  "milestones": [
+    { "key": "M1", "title": "v0.1 — Estabilização", "due_on": "2026-10-16", "description": "Corrigir bugs críticos do fluxo pedido → pagamento e as falhas de segurança mais graves. Build e CI verdes." },
+    { "key": "M2", "title": "v0.2 — Padronização", "due_on": "2026-10-30", "description": "Todos os módulos seguem o mesmo padrão de DTOs, mappers, rotas, erros e tipos. Migrations com Flyway." },
+    { "key": "M3", "title": "v0.3 — Autenticação e Autorização", "due_on": "2026-11-27", "description": "Identidade unificada, permissões granulares, refresh token, recuperação de senha, cliente com acesso próprio." },
+    { "key": "M4", "title": "v0.4 — Fluxo de Vendas Completo", "due_on": "2026-12-23", "description": "Ciclo de vida do pedido, pagamentos parciais e estorno, estoque, caixa e relatórios." },
+    { "key": "M5", "title": "v0.5 — Multi-estabelecimento", "due_on": "2027-01-15", "description": "Isolamento por estabelecimento, onboarding self-service e configurações por estabelecimento." },
+    { "key": "M6", "title": "v1.0 — Produção e Integrações", "due_on": "2027-01-29", "description": "Gateway de pagamento, deploy em nuvem, observabilidade, qualidade e documentação." }
+  ],
+  "sprints": [
+    { "name": "Sprint 1", "start": "2026-10-05", "end": "2026-10-16", "milestone": "M1" },
+    { "name": "Sprint 2", "start": "2026-10-19", "end": "2026-10-30", "milestone": "M2" },
+    { "name": "Sprint 3", "start": "2026-11-02", "end": "2026-11-13", "milestone": "M3" },
+    { "name": "Sprint 4", "start": "2026-11-16", "end": "2026-11-27", "milestone": "M3" },
+    { "name": "Sprint 5", "start": "2026-11-30", "end": "2026-12-11", "milestone": "M4" },
+    { "name": "Sprint 6", "start": "2026-12-14", "end": "2026-12-23", "milestone": "M4" },
+    { "name": "Sprint 7", "start": "2027-01-04", "end": "2027-01-15", "milestone": "M5" },
+    { "name": "Sprint 8", "start": "2027-01-18", "end": "2027-01-29", "milestone": "M6" }
+  ],
+  "issues": [
+    {
+      "key": "NX-01", "sprint": "Sprint 1", "milestone": "M1", "priority": "critical", "estimate": 3,
+      "labels": ["type:bug", "area:orders"],
+      "title": "Persistir todos os itens do pedido na criação",
+      "context": "OrderService.createOrder reutiliza uma única instância de OrderItem dentro do loop; um pedido com 3 itens grava só o último. O pedido também é salvo sem `moment` e sem transação.",
+      "tasks": ["Criar um OrderItem novo por item do DTO", "Mapear `@OneToMany(mappedBy = \"order\", cascade = ALL)` em Order", "Corrigir o construtor de OrderItem, que ignora `order` e `product`", "Preencher `moment` na criação e anotar o método com `@Transactional`"],
+      "acceptance": ["POST de um pedido com 3 itens grava 3 linhas em tb_order_item", "Se um produto não existir, nada é gravado (rollback)", "Teste de integração cobre o cenário"],
+      "refs": ["B1", "B12", "B13"]
+    },
+    {
+      "key": "NX-02", "sprint": "Sprint 1", "milestone": "M1", "priority": "critical", "estimate": 1,
+      "labels": ["type:bug", "area:orders"],
+      "title": "Corrigir itens repetidos na consulta de pedido",
+      "context": "OrderService.getOrderById reutiliza um único OrderItemDto no `map`; todos os itens da resposta saem com os dados do último.",
+      "tasks": ["Criar um DTO por item dentro do `map`", "Remover a segunda consulta ao banco em getTotalValue"],
+      "acceptance": ["GET de um pedido com itens distintos retorna cada item com seu produto e quantidade", "Teste unitário cobre o cenário"],
+      "refs": ["B2"]
+    },
+    {
+      "key": "NX-03", "sprint": "Sprint 1", "milestone": "M1", "priority": "critical", "estimate": 5,
+      "labels": ["type:bug", "area:payments"],
+      "title": "Corrigir registro de pagamento (valor divergente, pedido alvo e vínculo)",
+      "context": "PaymentService.makePayment cria `new RuntimeException` sem `throw` (valor errado retorna 200), escolhe o primeiro pedido pendente do cliente via header `customerId`, e a entidade Payment combina `@MapsId` com `@GeneratedValue` e tem auto-atribuição no construtor.",
+      "tasks": ["Mudar a rota para `POST /orders/{orderId}/payments`", "Lançar exceção de negócio quando o valor não bate com o total", "Corrigir o mapeamento Payment ↔ Order e o construtor", "Preencher `moment` e `status` do pagamento"],
+      "acceptance": ["Valor divergente retorna 422 com mensagem clara", "Pagamento fica vinculado ao pedido informado na URL", "Pedido muda para PAID somente após pagamento válido"],
+      "refs": ["B3", "B9", "B10"]
+    },
+    {
+      "key": "NX-04", "sprint": "Sprint 1", "milestone": "M1", "priority": "critical", "estimate": 3,
+      "labels": ["type:security", "area:api", "area:orders"],
+      "title": "Nunca retornar entidades JPA nas respostas da API",
+      "context": "OrderController.createOrder retorna a entidade Order; o JSON inclui o Employee e o Customer completos, com hash de senha e salário.",
+      "tasks": ["Criar OrderResponse (record) com itens, total e ids/nomes de cliente e funcionário", "Revisar todos os controllers para retornar só DTOs", "Adicionar teste que garante ausência de `password` em respostas"],
+      "acceptance": ["Nenhuma resposta contém `password` ou `baseSalary` fora do endpoint de funcionários com permissão", "POST /orders retorna 201 com Location e OrderResponse"],
+      "refs": ["B4"]
+    },
+    {
+      "key": "NX-05", "sprint": "Sprint 1", "milestone": "M1", "priority": "critical", "estimate": 1,
+      "labels": ["type:security", "area:people"],
+      "title": "Criptografar senha de clientes com BCrypt",
+      "context": "CustomerService.create salva a senha em texto puro; o seed do TestConfig faz o mesmo.",
+      "tasks": ["Usar PasswordEncoder no create de Customer", "Ajustar o seed de teste", "Script de migração para re-hash ou invalidar senhas existentes"],
+      "acceptance": ["Senha de cliente no banco começa com `$2`", "Teste unitário cobre o create"],
+      "refs": ["B5"]
+    },
+    {
+      "key": "NX-06", "sprint": "Sprint 1", "milestone": "M1", "priority": "critical", "estimate": 1,
+      "labels": ["type:security", "area:auth", "area:infra"],
+      "title": "Mover o segredo do JWT para variável de ambiente",
+      "context": "`api.security.token.secret=super-secret-key` está versionado em application.properties; qualquer pessoa com acesso ao repositório forja tokens.",
+      "tasks": ["Ler `JWT_SECRET` do ambiente sem valor padrão em produção", "Adicionar ao .env.example e ao docker-compose", "Validar no startup que o segredo tem ≥ 32 bytes", "Gerar um novo segredo para os ambientes existentes"],
+      "acceptance": ["Aplicação não sobe sem JWT_SECRET fora do profile de teste", "Nenhum segredo real no repositório"],
+      "refs": ["B8"]
+    },
+    {
+      "key": "NX-07", "sprint": "Sprint 1", "milestone": "M1", "priority": "critical", "estimate": 3,
+      "labels": ["type:feature", "area:auth"],
+      "title": "Criar o primeiro administrador em produção (bootstrap)",
+      "context": "Todos os endpoints exigem um funcionário autenticado e o seed só roda no profile `test`; em produção não há como criar o primeiro usuário.",
+      "tasks": ["Criar um runner que, se não houver nenhum MANAGER, cria um a partir de ADMIN_EMAIL e ADMIN_PASSWORD", "Logar aviso para trocar a senha no primeiro acesso", "Documentar no README"],
+      "acceptance": ["Com o banco vazio e as variáveis definidas, é possível logar como gerente", "Com um gerente existente, o runner não faz nada"],
+      "refs": ["B6"]
+    },
+    {
+      "key": "NX-08", "sprint": "Sprint 1", "milestone": "M1", "priority": "critical", "estimate": 2,
+      "labels": ["type:security", "area:auth", "area:people"],
+      "title": "Restringir a gestão de funcionários ao gerente",
+      "context": "Qualquer funcionário, inclusive INTERN, pode criar gerentes, excluir colegas e alterar `role` e `baseSalary`. Correção rápida até a matriz de permissões da Milestone 3.",
+      "tasks": ["Habilitar `@EnableMethodSecurity`", "Exigir `hasRole('MANAGER')` em POST, PATCH e DELETE de /employees", "Impedir que um usuário altere o próprio `role`"],
+      "acceptance": ["SELLER e INTERN recebem 403 nessas rotas", "Teste de integração cobre os três cargos"],
+      "refs": ["B7"]
+    },
+    {
+      "key": "NX-09", "sprint": "Sprint 1", "milestone": "M1", "priority": "high", "estimate": 3,
+      "labels": ["type:feature", "area:api"],
+      "title": "Tratamento global de erros com ProblemDetail (RFC 9457)",
+      "context": "Não há @RestControllerAdvice: recurso inexistente e credencial inválida viram 500 com stack trace.",
+      "tasks": ["Criar exceções de domínio (NotFound, BusinessRule, Conflict)", "Criar GlobalExceptionHandler retornando ProblemDetail", "Mapear validação (400), não encontrado (404), conflito (409), regra de negócio (422)"],
+      "acceptance": ["Nenhum endpoint retorna 500 para erro previsível", "Formato de erro documentado no Swagger"],
+      "refs": ["B14"]
+    },
+    {
+      "key": "NX-10", "sprint": "Sprint 1", "milestone": "M1", "priority": "high", "estimate": 3,
+      "labels": ["type:feature", "area:api"],
+      "title": "Validar requisições com Bean Validation",
+      "context": "Sem `spring-boot-starter-validation`, a API aceita preço negativo, quantidade zero, e-mail vazio e pedido sem itens.",
+      "tasks": ["Adicionar a dependência", "Anotar os DTOs de entrada (@NotBlank, @Email, @Positive, @NotEmpty, @Size)", "Usar @Valid nos controllers"],
+      "acceptance": ["Entrada inválida retorna 400 com a lista de campos", "Testes cobrem ao menos um caso por DTO"],
+      "refs": ["B15"]
+    },
+    {
+      "key": "NX-11", "sprint": "Sprint 1", "milestone": "M1", "priority": "high", "estimate": 2,
+      "labels": ["type:bug", "area:auth"],
+      "title": "Corrigir expiração do token e bloquear login de usuário inativo",
+      "context": "TokenService calcula a expiração com LocalDateTime + offset fixo -03:00 (em servidor UTC o token vale ~5 h). AuthService não verifica `active` nem grava `lastLogin`, e lança RuntimeException (500).",
+      "tasks": ["Usar `Instant.now().plus(Duration)` com duração configurável", "Recusar login de usuário inativo", "Atualizar lastLogin", "Retornar 401 para credencial inválida"],
+      "acceptance": ["Token expira exatamente após a duração configurada, em qualquer fuso", "Funcionário inativo recebe 401"],
+      "refs": ["B17", "B18"]
+    },
+    {
+      "key": "NX-12", "sprint": "Sprint 1", "milestone": "M1", "priority": "high", "estimate": 2,
+      "labels": ["type:test", "area:infra"],
+      "title": "Fazer a suíte de testes rodar sem Postgres",
+      "context": "`./mvnw test` falha: NexOrderApplicationTests sobe sem profile e exige DB_URL (\"'url' must start with jdbc\"). OrderRepositoryTest está vazio.",
+      "tasks": ["Ativar o profile `test` (H2) nos testes ou usar Testcontainers", "Implementar o OrderRepositoryTest", "Definir JWT_SECRET de teste"],
+      "acceptance": ["`./mvnw test` passa numa máquina sem .env"],
+      "refs": ["B11"]
+    },
+    {
+      "key": "NX-13", "sprint": "Sprint 1", "milestone": "M1", "priority": "high", "estimate": 2,
+      "labels": ["type:chore", "area:infra"],
+      "title": "Pipeline de CI com GitHub Actions",
+      "context": "Não há CI; PRs são aceitos sem compilar ou testar.",
+      "tasks": ["Workflow que roda `./mvnw verify` em push e PR para develop e main", "Cache do Maven", "Exigir o check verde na proteção de branch"],
+      "acceptance": ["PR com teste quebrado não pode ser mergeado"],
+      "refs": []
+    },
+    {
+      "key": "NX-14", "sprint": "Sprint 1", "milestone": "M1", "priority": "medium", "estimate": 1,
+      "labels": ["type:chore", "area:infra"],
+      "title": "Remover logs de debug e separar configuração por ambiente",
+      "context": "SecurityFilter imprime e-mail e permissões a cada request com System.out. `show-sql=true` e `ddl-auto=update` valem para todos os ambientes.",
+      "tasks": ["Remover System.out e usar SLF4J em nível DEBUG", "Criar application-dev.properties e application-prod.properties", "Desligar show-sql em produção"],
+      "acceptance": ["Nenhum dado pessoal nos logs padrão"],
+      "refs": ["B22"]
+    },
+    {
+      "key": "NX-15", "existing": 77, "sprint": "Sprint 1", "milestone": "M1", "priority": "low", "estimate": 1,
+      "labels": ["type:chore"],
+      "title": "Analyse Branches",
+      "context": "Issue existente: revisar e remover branches mortas.",
+      "tasks": [], "acceptance": [], "refs": []
+    },
+
+    {
+      "key": "NX-16", "sprint": "Sprint 2", "milestone": "M2", "priority": "high", "estimate": 2,
+      "labels": ["type:docs"],
+      "title": "Guia de convenções do projeto (CONTRIBUTING.md)",
+      "context": "Cada módulo segue um padrão diferente. O guia vira a referência para revisão de PRs.",
+      "tasks": ["Documentar nomes de DTOs, mappers, rotas, códigos HTTP, erros, injeção de dependência e tipos", "Documentar fluxo de git (branches, Conventional Commits, PR)", "Criar templates de issue e PR com Definition of Done"],
+      "acceptance": ["Guia aprovado pelo time e linkado no README", "Templates aparecem ao abrir issue/PR"],
+      "refs": []
+    },
+    {
+      "key": "NX-17", "sprint": "Sprint 2", "milestone": "M2", "priority": "medium", "estimate": 1,
+      "labels": ["type:refactor"],
+      "title": "Injeção de dependência por construtor em todos os beans",
+      "context": "Mistura de @Autowired em campo, campos públicos e construtor (OrderController tem os dois).",
+      "tasks": ["Usar campos `private final` + `@RequiredArgsConstructor`", "Remover @Autowired de campos"],
+      "acceptance": ["Nenhum @Autowired em campo no código de produção"],
+      "refs": []
+    },
+    {
+      "key": "NX-18", "sprint": "Sprint 2", "milestone": "M2", "priority": "high", "estimate": 3,
+      "labels": ["type:refactor", "area:catalog"],
+      "title": "Padronizar o módulo de produtos",
+      "context": "ProductService mapeia à mão, delete não verifica existência, update tem código morto, create retorna 201 sem corpo.",
+      "tasks": ["Criar ProductCreateRequest, ProductUpdateRequest e ProductResponse (records)", "Criar ProductMapper (MapStruct)", "Retornar 201 + Location + corpo no create e 204 no delete", "Lançar NotFound no update e delete"],
+      "acceptance": ["Módulo segue o CONTRIBUTING.md", "Testes unitários do service"],
+      "refs": ["B21"]
+    },
+    {
+      "key": "NX-19", "sprint": "Sprint 2", "milestone": "M2", "priority": "high", "estimate": 3,
+      "labels": ["type:refactor", "area:orders"],
+      "title": "Padronizar o módulo de pedidos",
+      "context": "OrderDTO é usado para entrada e saída; getters não seguem o nome do campo (`getCustomer` retorna id); Order expõe `getCustomerId()` retornando a entidade.",
+      "tasks": ["Criar OrderCreateRequest, OrderItemRequest, OrderResponse, OrderItemResponse", "Criar OrderMapper", "Renomear getters de Order e usar Long em getId"],
+      "acceptance": ["Módulo segue o CONTRIBUTING.md", "Contrato documentado no Swagger"],
+      "refs": []
+    },
+    {
+      "key": "NX-20", "sprint": "Sprint 2", "milestone": "M2", "priority": "high", "estimate": 2,
+      "labels": ["type:refactor", "area:payments"],
+      "title": "Padronizar o módulo de pagamentos",
+      "context": "PaymentController usa @Controller e ResponseEntity sem tipo; PaymentDto é classe mutável; PaymentStatus nunca é usado.",
+      "tasks": ["Trocar para @RestController", "Criar PaymentRequest e PaymentResponse (records) e PaymentMapper", "Usar PaymentStatus na entidade"],
+      "acceptance": ["Módulo segue o CONTRIBUTING.md"],
+      "refs": []
+    },
+    {
+      "key": "NX-21", "existing": 76, "sprint": "Sprint 2", "milestone": "M2", "priority": "medium", "estimate": 1,
+      "labels": ["type:refactor"],
+      "title": "Refactor DTO",
+      "context": "Issue existente. Escopo proposto: remover DTOs legados sem uso (CreateCustomerDto, ReadCustomerDto, UpdateCustomerDto, EmployeeDto, ReadOrderDTO) e a issue #48 é fechada como duplicada desta.",
+      "tasks": [], "acceptance": [], "refs": []
+    },
+    {
+      "key": "NX-22", "sprint": "Sprint 2", "milestone": "M2", "priority": "medium", "estimate": 2,
+      "labels": ["type:refactor", "area:api"],
+      "title": "Rotas REST no padrão /api/v1 com recursos no plural",
+      "context": "Rotas no singular e sem versão (/customer, /order). Mudança quebra o contrato, então é feita uma vez, antes do frontend crescer.",
+      "tasks": ["Renomear para /api/v1/customers, /employees, /products, /orders", "Pagamento como sub-recurso: /api/v1/orders/{id}/payments", "Atualizar Swagger e o frontend"],
+      "acceptance": ["Todas as rotas seguem o padrão", "Frontend atualizado"],
+      "refs": []
+    },
+    {
+      "key": "NX-23", "sprint": "Sprint 2", "milestone": "M2", "priority": "high", "estimate": 3,
+      "labels": ["type:refactor"],
+      "title": "Dinheiro em BigDecimal e datas em Instant",
+      "context": "Preços, totais e salários em Double; pagamento comparado com `equals`. Datas misturam LocalDate, Instant e ZonedDateTime.",
+      "tasks": ["BigDecimal com escala 2 e RoundingMode.HALF_EVEN", "Comparar valores com compareTo", "Instant para timestamps; createdAt/updatedAt com auditing do JPA"],
+      "acceptance": ["Nenhum Double ou double para valores monetários", "Teste com valores como 0.1 + 0.2"],
+      "refs": ["B16"]
+    },
+    {
+      "key": "NX-24", "sprint": "Sprint 2", "milestone": "M2", "priority": "high", "estimate": 3,
+      "labels": ["type:chore", "area:infra"],
+      "title": "Migrations com Flyway",
+      "context": "`ddl-auto=update` altera o schema sozinho em produção. A tabela de clientes se chama tb_costumer (typo).",
+      "tasks": ["Adicionar Flyway e a migration V1 com o schema atual corrigido (tb_customer)", "`ddl-auto=validate`", "Constraints de unicidade (e-mail, identifier) e FKs explícitas"],
+      "acceptance": ["Banco novo sobe só com as migrations", "Aplicação valida o schema no startup"],
+      "refs": ["B23", "B24"]
+    },
+    {
+      "key": "NX-25", "sprint": "Sprint 2", "milestone": "M2", "priority": "low", "estimate": 1,
+      "labels": ["type:refactor"],
+      "title": "Unificar nomes de enums e mensagens em inglês",
+      "context": "OrderStatus usa CANCELLED e PaymentStatus usa CANCELED; Role serializa como \"Gestor\" via @JsonValue; mensagens misturam português e inglês.",
+      "tasks": ["Padronizar CANCELED", "Serializar enums pelo nome; rótulo traduzido fica no frontend", "Mensagens de erro em inglês com código estável"],
+      "acceptance": ["Enums e mensagens seguem o CONTRIBUTING.md"],
+      "refs": []
+    },
+    {
+      "key": "NX-26", "sprint": "Sprint 2", "milestone": "M2", "priority": "medium", "estimate": 1,
+      "labels": ["type:docs"],
+      "title": "Atualizar o README",
+      "context": "O README descreve pastas que não existem mais (backend/, Gestao-De-Empresas, untitled) e não lista as variáveis de ambiente.",
+      "tasks": ["Estrutura real do projeto", "Como rodar local, com Docker e testes", "Tabela de variáveis de ambiente"],
+      "acceptance": ["Um novo membro roda o projeto só com o README"],
+      "refs": []
+    },
+    {
+      "key": "NX-27", "sprint": "Sprint 2", "milestone": "M2", "priority": "medium", "estimate": 3,
+      "labels": ["type:test"],
+      "title": "Testes unitários dos services",
+      "context": "Não há testes de regra de negócio.",
+      "tasks": ["Testes de Customer, Employee, Product, Order e Payment services com Mockito", "Relatório de cobertura com JaCoCo no CI"],
+      "acceptance": ["Cobertura ≥ 60% nos services"],
+      "refs": []
+    },
+
+    {
+      "key": "NX-28", "sprint": "Sprint 3", "milestone": "M3", "priority": "critical", "estimate": 5,
+      "labels": ["type:feature", "type:security", "area:auth"],
+      "title": "Modelo de identidade unificado (UserAccount)",
+      "context": "Customer e Employee têm tabelas e credenciais separadas; e-mail só é único por tabela e só funcionário consegue logar.",
+      "tasks": ["Criar UserAccount (email único, senha, status, roles) separado dos perfis Customer e Employee", "Migration de dados das duas tabelas", "Adaptar AuthService e SecurityFilter"],
+      "acceptance": ["Um e-mail identifica uma única conta", "Login funciona para funcionário e cliente"],
+      "refs": ["B20"]
+    },
+    {
+      "key": "NX-29", "sprint": "Sprint 3", "milestone": "M3", "priority": "critical", "estimate": 5,
+      "labels": ["type:feature", "type:security", "area:auth"],
+      "title": "Permissões granulares com @PreAuthorize",
+      "context": "Hoje há uma regra para tudo (`hasRole(\"EMPLOYEE\")`). A matriz de permissões do roadmap define o que cada papel pode fazer.",
+      "tasks": ["Enum Permission (ex.: ORDER_CREATE, PAYMENT_REFUND, EMPLOYEE_MANAGE)", "Mapeamento papel → permissões (OWNER, MANAGER, CASHIER, ATTENDANT, CUSTOMER)", "@PreAuthorize em cada endpoint", "Remover INTERN e SELLER ou mapear para os novos papéis"],
+      "acceptance": ["Cada endpoint tem uma permissão explícita", "Matriz documentada e coberta por testes (NX-40)"],
+      "refs": ["B7"]
+    },
+    {
+      "key": "NX-30", "sprint": "Sprint 3", "milestone": "M3", "priority": "high", "estimate": 3,
+      "labels": ["type:refactor", "type:security", "area:auth"],
+      "title": "Migrar validação de JWT para Spring Security Resource Server",
+      "context": "O filtro customizado com auth0/java-jwt consulta o banco a cada request e retorna 403 para não autenticado.",
+      "tasks": ["Usar spring-boot-starter-oauth2-resource-server com NimbusJwtDecoder/Encoder", "Claims: sub (id), email, roles, establishment_id", "AuthenticationEntryPoint (401) e AccessDeniedHandler (403) com ProblemDetail"],
+      "acceptance": ["Sem token: 401; sem permissão: 403", "Dependência auth0 removida"],
+      "refs": []
+    },
+    {
+      "key": "NX-31", "sprint": "Sprint 3", "milestone": "M3", "priority": "high", "estimate": 2,
+      "labels": ["type:feature", "area:auth"],
+      "title": "Login com resposta JSON e endpoint /auth/me",
+      "context": "O login retorna o token como string pura; o frontend não sabe quem está logado nem quando o token expira.",
+      "tasks": ["Resposta { accessToken, refreshToken, tokenType, expiresIn }", "GET /auth/me com dados e permissões do usuário"],
+      "acceptance": ["Frontend monta o menu a partir de /auth/me"],
+      "refs": []
+    },
+    {
+      "key": "NX-32", "sprint": "Sprint 3", "milestone": "M3", "priority": "high", "estimate": 5,
+      "labels": ["type:feature", "type:security", "area:auth"],
+      "title": "Refresh token com rotação e logout",
+      "context": "Token de acesso de 2 h sem renovação força login frequente e não pode ser revogado.",
+      "tasks": ["Access token de 15 min e refresh de 7 dias", "Refresh token opaco, salvo com hash, rotacionado a cada uso", "Detecção de reuso revoga a família", "POST /auth/logout revoga o refresh"],
+      "acceptance": ["Refresh reutilizado invalida a sessão", "Desativar um usuário revoga seus refresh tokens"],
+      "refs": []
+    },
+    {
+      "key": "NX-33", "sprint": "Sprint 3", "milestone": "M3", "priority": "medium", "estimate": 1,
+      "labels": ["type:feature", "area:infra"],
+      "title": "CORS global configurável",
+      "context": "Só o EmployeeController tem @CrossOrigin(\"*\").",
+      "tasks": ["CorsConfigurationSource no SecurityConfig com origens de CORS_ALLOWED_ORIGINS", "Remover @CrossOrigin dos controllers"],
+      "acceptance": ["Frontend acessa todas as rotas; origem desconhecida é bloqueada"],
+      "refs": []
+    },
+    {
+      "key": "NX-34", "sprint": "Sprint 3", "milestone": "M3", "priority": "medium", "estimate": 1,
+      "labels": ["type:docs", "area:auth"],
+      "title": "Swagger com autenticação Bearer",
+      "context": "/swagger e /api-docs estão bloqueados pela regra global, e o Swagger não tem esquema de segurança.",
+      "tasks": ["Liberar rotas do Swagger (só em dev, ou atrás de flag)", "SecurityScheme bearer no OpenApiConfig"],
+      "acceptance": ["É possível autenticar e testar rotas pelo Swagger"],
+      "refs": []
+    },
+    {
+      "key": "NX-35", "sprint": "Sprint 4", "milestone": "M3", "priority": "high", "estimate": 5,
+      "labels": ["type:feature", "area:auth"],
+      "title": "Troca e recuperação de senha",
+      "context": "Não existe forma de trocar a senha nem de recuperar acesso.",
+      "tasks": ["PATCH /auth/password (senha atual + nova)", "POST /auth/forgot-password e /auth/reset-password com token de uso único (30 min)", "Envio de e-mail (SMTP configurável; log em dev)", "Política mínima de senha"],
+      "acceptance": ["Token de reset expira e não pode ser reutilizado", "Resposta do forgot não revela se o e-mail existe"],
+      "refs": []
+    },
+    {
+      "key": "NX-36", "sprint": "Sprint 4", "milestone": "M3", "priority": "high", "estimate": 3,
+      "labels": ["type:feature", "area:auth", "area:people"],
+      "title": "Cadastro e login de clientes",
+      "context": "Clientes não conseguem se autenticar; só funcionários criam clientes.",
+      "tasks": ["POST /auth/register para cliente (público)", "Confirmação de e-mail opcional por configuração"],
+      "acceptance": ["Cliente se cadastra e loga com papel CUSTOMER"],
+      "refs": []
+    },
+    {
+      "key": "NX-37", "sprint": "Sprint 4", "milestone": "M3", "priority": "high", "estimate": 3,
+      "labels": ["type:security", "area:auth", "area:orders"],
+      "title": "Cliente acessa apenas os próprios dados e pedidos",
+      "context": "Com clientes logando, é preciso checar propriedade além do papel.",
+      "tasks": ["GET /me/orders e /me/profile para cliente", "Checagem de dono em pedidos e pagamentos", "Funcionário informa customerId; cliente nunca"],
+      "acceptance": ["Cliente A recebe 404 ao buscar pedido do cliente B"],
+      "refs": ["B9"]
+    },
+    {
+      "key": "NX-38", "sprint": "Sprint 4", "milestone": "M3", "priority": "medium", "estimate": 3,
+      "labels": ["type:security", "area:auth"],
+      "title": "Proteção contra força bruta no login",
+      "context": "Login sem limite de tentativas.",
+      "tasks": ["Rate limit por IP e por e-mail (Bucket4j)", "Bloqueio temporário após 5 falhas em 15 min", "429 com Retry-After"],
+      "acceptance": ["6ª tentativa errada em sequência recebe 429"],
+      "refs": []
+    },
+    {
+      "key": "NX-39", "sprint": "Sprint 4", "milestone": "M3", "priority": "medium", "estimate": 3,
+      "labels": ["type:feature", "type:security"],
+      "title": "Auditoria de ações sensíveis",
+      "context": "Não há registro de quem cancelou um pedido, estornou um pagamento ou alterou um salário.",
+      "tasks": ["Tabela audit_log (quem, quando, ação, entidade, antes/depois)", "Registrar login, mudanças de funcionário, cancelamento, estorno", "GET /audit-logs para OWNER"],
+      "acceptance": ["Toda ação listada gera um registro"],
+      "refs": []
+    },
+    {
+      "key": "NX-40", "sprint": "Sprint 4", "milestone": "M3", "priority": "high", "estimate": 3,
+      "labels": ["type:test", "area:auth"],
+      "title": "Testes de integração da matriz de permissões",
+      "context": "Garantir que nenhuma rota fique aberta por engano.",
+      "tasks": ["Teste parametrizado papel × endpoint com MockMvc", "Teste que falha se surgir endpoint sem @PreAuthorize"],
+      "acceptance": ["Matriz inteira coberta e verde no CI"],
+      "refs": []
+    },
+
+    {
+      "key": "NX-41", "existing": 50, "sprint": "Sprint 5", "milestone": "M4", "priority": "critical", "estimate": 5,
+      "labels": ["type:feature", "area:orders"],
+      "title": "Implement a sales flow",
+      "context": "Issue existente. Escopo proposto: ciclo de vida do pedido com máquina de estados DRAFT → OPEN → CONFIRMED → PREPARING → READY → DELIVERED/COMPLETED, com CANCELED a partir de estados permitidos.",
+      "tasks": [], "acceptance": [], "refs": []
+    },
+    {
+      "key": "NX-42", "sprint": "Sprint 5", "milestone": "M4", "priority": "high", "estimate": 3,
+      "labels": ["type:feature", "area:orders"],
+      "title": "Listagem de pedidos com paginação e filtros",
+      "context": "Não há como listar pedidos; só buscar por id.",
+      "tasks": ["GET /orders com Pageable", "Filtros por status, período, cliente, funcionário", "Paginação também em clientes, funcionários e produtos"],
+      "acceptance": ["Listagens retornam page, size, totalElements", "Tamanho máximo de página limitado a 100"],
+      "refs": []
+    },
+    {
+      "key": "NX-43", "sprint": "Sprint 5", "milestone": "M4", "priority": "high", "estimate": 2,
+      "labels": ["type:feature", "area:orders"],
+      "title": "Cancelamento de pedido com motivo",
+      "context": "Não há endpoint de cancelamento.",
+      "tasks": ["POST /orders/{id}/cancel com motivo obrigatório", "Devolver estoque e exigir estorno se houver pagamento"],
+      "acceptance": ["Pedido entregue não pode ser cancelado", "Cancelamento fica na auditoria"],
+      "refs": []
+    },
+    {
+      "key": "NX-44", "sprint": "Sprint 5", "milestone": "M4", "priority": "critical", "estimate": 5,
+      "labels": ["type:feature", "area:payments"],
+      "title": "Múltiplos pagamentos por pedido (parcial e dividido)",
+      "context": "Um pedido aceita só um pagamento e o valor tem que bater exato. Estabelecimentos dividem conta e misturam PIX e cartão.",
+      "tasks": ["Order 1 → N Payment", "Saldo devedor calculado; pedido PAID quando saldo = 0", "Formas: PIX, CREDIT, DEBIT, CASH, VOUCHER", "Troco para CASH"],
+      "acceptance": ["Pedido de R$ 100 pago com R$ 60 PIX + R$ 40 cartão fica PAID", "Pagamento acima do saldo é recusado, exceto CASH com troco"],
+      "refs": []
+    },
+    {
+      "key": "NX-45", "sprint": "Sprint 5", "milestone": "M4", "priority": "high", "estimate": 3,
+      "labels": ["type:feature", "area:payments"],
+      "title": "Estorno de pagamento",
+      "context": "Não há como desfazer um pagamento.",
+      "tasks": ["POST /payments/{id}/refund (total ou parcial) com permissão PAYMENT_REFUND", "Status REFUNDED/PARTIALLY_REFUNDED", "Reabrir saldo do pedido"],
+      "acceptance": ["Estorno registrado na auditoria", "Caixa reflete o estorno"],
+      "refs": []
+    },
+    {
+      "key": "NX-46", "sprint": "Sprint 5", "milestone": "M4", "priority": "medium", "estimate": 2,
+      "labels": ["type:feature", "area:people"],
+      "title": "Soft delete de clientes, funcionários e produtos",
+      "context": "DELETE físico falha com FK quando há pedidos e apaga histórico.",
+      "tasks": ["DELETE marca active=false (e deletedAt)", "Listagens ocultam inativos por padrão", "Unicidade de e-mail considera só ativos"],
+      "acceptance": ["Excluir cliente com pedidos retorna 204 e o histórico continua consultável"],
+      "refs": ["B19"]
+    },
+    {
+      "key": "NX-47", "sprint": "Sprint 6", "milestone": "M4", "priority": "high", "estimate": 3,
+      "labels": ["type:feature", "area:catalog"],
+      "title": "Categorias de produto configuráveis",
+      "context": "ProductCategory é um enum fixo (BOOK, GAMES, OTHER), que não serve para outros tipos de estabelecimento.",
+      "tasks": ["Entidade Category (nome, ordem, ativa)", "CRUD /categories", "Migration convertendo o enum atual"],
+      "acceptance": ["Gerente cria a categoria \"Bebidas\" e associa produtos"],
+      "refs": []
+    },
+    {
+      "key": "NX-48", "sprint": "Sprint 6", "milestone": "M4", "priority": "medium", "estimate": 2,
+      "labels": ["type:feature", "area:catalog"],
+      "title": "Enriquecer o cadastro de produto",
+      "context": "Produto tem só nome, preço e categoria.",
+      "tasks": ["SKU/código de barras único, descrição, unidade (un, kg), ativo, URL de imagem", "Busca por nome ou SKU"],
+      "acceptance": ["Produto inativo não pode entrar em novo pedido"],
+      "refs": []
+    },
+    {
+      "key": "NX-49", "sprint": "Sprint 6", "milestone": "M4", "priority": "high", "estimate": 5,
+      "labels": ["type:feature", "area:catalog"],
+      "title": "Controle de estoque",
+      "context": "Não há estoque; é possível vender o que não existe.",
+      "tasks": ["Flag por produto: controla estoque ou não (serviços não controlam)", "Movimentações (entrada, saída por venda, ajuste, devolução)", "Baixa ao confirmar pedido com lock otimista", "Alerta de estoque mínimo"],
+      "acceptance": ["Dois pedidos simultâneos não vendem a última unidade duas vezes"],
+      "refs": []
+    },
+    {
+      "key": "NX-50", "sprint": "Sprint 6", "milestone": "M4", "priority": "high", "estimate": 5,
+      "labels": ["type:feature", "area:payments"],
+      "title": "Abertura e fechamento de caixa",
+      "context": "Caixa precisa conferir o dinheiro do turno.",
+      "tasks": ["Abrir caixa com saldo inicial", "Pagamentos vinculados ao caixa aberto", "Sangria e suprimento", "Fechamento com valor contado e diferença"],
+      "acceptance": ["Não é possível receber em dinheiro sem caixa aberto", "Relatório de fechamento por forma de pagamento"],
+      "refs": []
+    },
+    {
+      "key": "NX-51", "sprint": "Sprint 6", "milestone": "M4", "priority": "medium", "estimate": 5,
+      "labels": ["type:feature"],
+      "title": "Relatórios de vendas",
+      "context": "O dono não tem visão do faturamento.",
+      "tasks": ["Vendas por dia e período", "Ranking de produtos", "Totais por forma de pagamento e por funcionário", "Ticket médio"],
+      "acceptance": ["Relatório de um dia com 1.000 pedidos responde em < 2 s"],
+      "refs": []
+    },
+    {
+      "key": "NX-52", "sprint": "Sprint 6", "milestone": "M4", "priority": "medium", "estimate": 3,
+      "labels": ["type:feature", "area:orders"],
+      "title": "Tipo de pedido e observações",
+      "context": "Lanchonetes e restaurantes precisam saber se o pedido é balcão, mesa ou entrega.",
+      "tasks": ["OrderType: COUNTER, TABLE, DELIVERY, PICKUP", "Número da mesa ou endereço de entrega", "Observação por pedido e por item"],
+      "acceptance": ["Pedido DELIVERY exige endereço"],
+      "refs": []
+    },
+
+    {
+      "key": "NX-53", "sprint": "Sprint 7", "milestone": "M5", "priority": "critical", "estimate": 5,
+      "labels": ["type:feature", "area:tenancy"],
+      "title": "Entidade Establishment e establishment_id em todas as tabelas",
+      "context": "Base do SaaS: cada dado pertence a um estabelecimento.",
+      "tasks": ["Entidade Establishment (nome, CNPJ, fuso, moeda, status)", "Coluna establishment_id + índices em todas as tabelas de negócio", "Migration atribuindo os dados atuais a um estabelecimento padrão"],
+      "acceptance": ["Nenhuma tabela de negócio sem establishment_id"],
+      "refs": []
+    },
+    {
+      "key": "NX-54", "sprint": "Sprint 7", "milestone": "M5", "priority": "critical", "estimate": 5,
+      "labels": ["type:feature", "type:security", "area:tenancy"],
+      "title": "Isolamento automático de dados por estabelecimento",
+      "context": "Um estabelecimento nunca pode ver dados de outro.",
+      "tasks": ["establishment_id no JWT", "Filtro do Hibernate (@TenantId ou @Filter) aplicado em toda consulta", "Testes de vazamento entre tenants"],
+      "acceptance": ["Usuário do estabelecimento A recebe 404 para qualquer recurso do B", "Teste automatizado cobre todos os repositórios"],
+      "refs": []
+    },
+    {
+      "key": "NX-55", "sprint": "Sprint 7", "milestone": "M5", "priority": "high", "estimate": 3,
+      "labels": ["type:feature", "area:tenancy", "area:auth"],
+      "title": "Onboarding self-service de estabelecimento",
+      "context": "Novo cliente do SaaS se cadastra sozinho.",
+      "tasks": ["POST /signup cria Establishment + usuário OWNER", "Dados iniciais: categorias padrão por segmento (varejo, alimentação, serviços)"],
+      "acceptance": ["Do cadastro ao primeiro pedido em < 5 minutos"],
+      "refs": []
+    },
+    {
+      "key": "NX-56", "sprint": "Sprint 7", "milestone": "M5", "priority": "medium", "estimate": 3,
+      "labels": ["type:feature", "area:tenancy"],
+      "title": "Configurações por estabelecimento",
+      "context": "Cada negócio tem formas de pagamento, horário e regras próprias.",
+      "tasks": ["Formas de pagamento habilitadas", "Fuso horário e moeda", "Tipos de pedido habilitados", "Permite venda sem estoque?"],
+      "acceptance": ["Forma de pagamento desabilitada é recusada com 422"],
+      "refs": []
+    },
+    {
+      "key": "NX-57", "sprint": "Sprint 7", "milestone": "M5", "priority": "medium", "estimate": 3,
+      "labels": ["type:feature", "area:tenancy", "area:auth"],
+      "title": "Administração da plataforma",
+      "context": "A equipe do Nex Order precisa operar os estabelecimentos.",
+      "tasks": ["Papel PLATFORM_ADMIN fora de qualquer tenant", "Listar, suspender e reativar estabelecimentos"],
+      "acceptance": ["Estabelecimento suspenso não consegue logar"],
+      "refs": []
+    },
+
+    {
+      "key": "NX-58", "sprint": "Sprint 8", "milestone": "M6", "priority": "high", "estimate": 2,
+      "labels": ["type:chore", "area:infra"],
+      "title": "Docker Compose completo e imagem endurecida",
+      "context": "O compose não sobe o Postgres; a imagem roda como root e não tem healthcheck.",
+      "tasks": ["Serviço postgres com volume no compose", "Usuário não-root no Dockerfile", "Healthcheck via Actuator", "Variáveis JWT_SECRET, ADMIN_*, CORS_*"],
+      "acceptance": ["`docker compose up` sobe tudo do zero sem passos manuais"],
+      "refs": []
+    },
+    {
+      "key": "NX-59", "sprint": "Sprint 8", "milestone": "M6", "priority": "medium", "estimate": 2,
+      "labels": ["type:chore", "area:infra"],
+      "title": "Observabilidade: Actuator, logs estruturados e métricas",
+      "context": "Sem health, métricas ou correlação de logs.",
+      "tasks": ["Actuator com health e prometheus (protegidos)", "Logs JSON com requestId", "Métricas de pedidos e pagamentos"],
+      "acceptance": ["Health check usado pelo deploy"],
+      "refs": []
+    },
+    {
+      "key": "NX-60", "existing": 66, "sprint": "Sprint 8", "milestone": "M6", "priority": "high", "estimate": 8,
+      "labels": ["type:feature", "area:payments"],
+      "title": "Integrate with Abacate Pay",
+      "context": "Issue existente. Escopo proposto: PIX via Abacate Pay com webhook idempotente confirmando o pagamento; depende de NX-44.",
+      "tasks": [], "acceptance": [], "refs": []
+    },
+    {
+      "key": "NX-61", "existing": 67, "sprint": "Sprint 8", "milestone": "M6", "priority": "high", "estimate": 5,
+      "labels": ["type:chore", "area:infra"],
+      "title": "Perform cloud deployment",
+      "context": "Issue existente. Depende de NX-58 e NX-59.",
+      "tasks": [], "acceptance": [], "refs": []
+    },
+    {
+      "key": "NX-62", "existing": 68, "sprint": "Sprint 8", "milestone": "M6", "priority": "medium", "estimate": 2,
+      "labels": ["type:chore", "area:infra"],
+      "title": "Implement SonarQube",
+      "context": "Issue existente. Sugestão: SonarCloud no workflow de CI (NX-13), com quality gate no PR.",
+      "tasks": [], "acceptance": [], "refs": []
+    },
+    {
+      "key": "NX-63", "existing": 65, "sprint": "Sprint 8", "milestone": "M6", "priority": "medium", "estimate": 3,
+      "labels": ["type:docs"],
+      "title": "Prepare the project documentation",
+      "context": "Issue existente. Escopo proposto: arquitetura, modelo de dados, matriz de permissões, guia de deploy e changelog da v1.0.",
+      "tasks": [], "acceptance": [], "refs": []
+    }
+  ]
+}
