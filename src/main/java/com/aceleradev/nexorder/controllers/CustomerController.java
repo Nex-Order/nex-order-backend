@@ -6,22 +6,21 @@ import com.aceleradev.nexorder.dtos.customer.CustomerUpdateRequest;
 import com.aceleradev.nexorder.entities.Customer;
 import com.aceleradev.nexorder.mapper.CustomerMapper;
 import com.aceleradev.nexorder.services.CustomerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/customer")
+@RequiredArgsConstructor
 public class CustomerController {
 
-    @Autowired
-    private CustomerService service;
+    private final CustomerService service;
 
-    @Autowired
-    private CustomerMapper mapper;
+    private final CustomerMapper mapper;
 
     @PostMapping
     public ResponseEntity<CustomerResponse> create(@RequestBody CustomerCreateRequest request) {
