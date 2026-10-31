@@ -7,19 +7,18 @@ import com.aceleradev.nexorder.entities.Customer;
 import com.aceleradev.nexorder.mapper.CustomerMapper;
 import com.aceleradev.nexorder.repositories.CustomerRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerService {
 
-    @Autowired
-    private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
 
-    @Autowired
-    private CustomerMapper customerMapper;
+    private final CustomerMapper customerMapper;
 
     public List<CustomerResponse> findAll() {
         // Converte uma lista de "Customer" em "CustomerResponse".
