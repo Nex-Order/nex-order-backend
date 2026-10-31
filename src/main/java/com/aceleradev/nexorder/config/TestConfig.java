@@ -8,7 +8,6 @@ import com.aceleradev.nexorder.commons.enums.Role;
 import com.aceleradev.nexorder.repositories.*;
 import com.aceleradev.nexorder.entities.Order;
 import com.aceleradev.nexorder.entities.OrderItem;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -17,24 +16,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import lombok.RequiredArgsConstructor;
 
 
 @Configuration
 @Profile("test")
+@RequiredArgsConstructor
 public class TestConfig implements CommandLineRunner {
 
-    @Autowired
-    private CustomerRepository customerRepository;
-    @Autowired
-    private EmployeeRepository employeeRepository;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private OrderItemRepository orderItemRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final CustomerRepository customerRepository;
+    private final EmployeeRepository employeeRepository;
+    private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception{
