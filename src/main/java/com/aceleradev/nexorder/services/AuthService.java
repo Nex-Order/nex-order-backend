@@ -2,18 +2,17 @@ package com.aceleradev.nexorder.services;
 
 import com.aceleradev.nexorder.entities.Employee;
 import com.aceleradev.nexorder.repositories.EmployeeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    @Autowired
-    private EmployeeRepository repository;
+    private final EmployeeRepository repository;
 
-    @Autowired
-    private PasswordEncoder encoder;
+    private final PasswordEncoder encoder;
 
     public Employee authenticate(String email, String password) {
 
