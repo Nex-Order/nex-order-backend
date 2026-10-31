@@ -4,19 +4,18 @@ import com.aceleradev.nexorder.dtos.LoginRequest;
 import com.aceleradev.nexorder.entities.Employee;
 import com.aceleradev.nexorder.services.AuthService;
 import com.aceleradev.nexorder.infra.security.TokenService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
 
-    @Autowired
-    private TokenService tokenService;
+    private final TokenService tokenService;
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest data) {

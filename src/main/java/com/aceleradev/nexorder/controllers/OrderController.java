@@ -8,16 +8,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/order")
+@RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService service;
-
-    public OrderController(OrderService service) {
-        this.service = service;
-    }
 
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(

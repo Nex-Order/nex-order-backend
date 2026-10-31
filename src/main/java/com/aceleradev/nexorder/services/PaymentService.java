@@ -11,23 +11,20 @@ import com.aceleradev.nexorder.repositories.OrderItemRepository;
 import com.aceleradev.nexorder.repositories.OrderRepository;
 import com.aceleradev.nexorder.repositories.PaymentRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentService {
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
 
-    @Autowired
-    CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
 
-    @Autowired
-    private OrderItemRepository orderItemRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    @Autowired
-    private PaymentRepository paymentRepository;
+    private final PaymentRepository paymentRepository;
 
     public void makePayment(Long customerId, PaymentDto payment) {
         if (payment.getTotalValue().equals(getTotalValue(customerId))) {
