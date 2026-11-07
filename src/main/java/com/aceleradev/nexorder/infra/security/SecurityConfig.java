@@ -1,5 +1,6 @@
 package com.aceleradev.nexorder.infra.security;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -38,16 +39,27 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers
-                        .frameOptions(frame -> frame.disable())
+                        .frameOptions(frame -> frame.sameOrigin())
                 )
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        //.requestMatchers("/h2-console/**").permitAll()
-                        .anyRequest().hasRole("EMPLOYEE")                )
+                        .requestMatchers(
+                                "/auth/**",
+                                "/error",
+                                "/swagger",
+                                "/swagger/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/api-docs",
+                                "/api-docs/**",
+                                "/h2-console",
+                                "/h2-console/**"
+                        ).permitAll()
+                        .anyRequest().hasRole("EMPLOYEE")
+                )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

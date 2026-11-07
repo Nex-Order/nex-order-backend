@@ -4,6 +4,7 @@ import com.aceleradev.nexorder.dtos.employee.EmployeeCreateRequest;
 import com.aceleradev.nexorder.dtos.employee.EmployeeResponse;
 import com.aceleradev.nexorder.dtos.employee.EmployeeUpdateRequest;
 import com.aceleradev.nexorder.entities.Employee;
+import com.aceleradev.nexorder.exception.NotFoundException;
 import com.aceleradev.nexorder.mapper.EmployeeMapper;
 import com.aceleradev.nexorder.repositories.EmployeeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,7 +31,7 @@ public class EmployeeService {
 
     public EmployeeResponse findById(Long id) {
         Employee employee = repository.findById(id).
-                orElseThrow(() -> new EntityNotFoundException("Employee not found."));
+                orElseThrow(() -> new NotFoundException("Employee not found."));
 
         return employeeMapper.toResponse(employee);
     }
@@ -46,7 +47,7 @@ public class EmployeeService {
 
     public void delete(Long id) {
         if (!repository.existsById(id)){
-            throw new EntityNotFoundException("Employee not found.");
+            throw new NotFoundException("Employee not found.");
         }
 
         repository.deleteById(id);
@@ -55,7 +56,7 @@ public class EmployeeService {
     public EmployeeResponse update(Long id, EmployeeUpdateRequest request) {
 
         Employee employee = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found."));
+                .orElseThrow(() -> new NotFoundException("Employee not found."));
 
         employeeMapper.updateEmployeeFromDto(request, employee);
 

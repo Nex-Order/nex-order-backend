@@ -6,6 +6,7 @@ import com.aceleradev.nexorder.dtos.orderitem.OrderItemDTO;
 import com.aceleradev.nexorder.commons.enums.OrderStatus;
 import com.aceleradev.nexorder.dtos.orderitem.OrderItemResponse;
 import com.aceleradev.nexorder.entities.*;
+import com.aceleradev.nexorder.exception.NotFoundException;
 import com.aceleradev.nexorder.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -32,11 +33,11 @@ public class OrderService {
     @Transactional
     public Order createOrder(OrderDTO orderDTO) {
 
-        Employee employee = employeeRepository.findById(orderDTO.getEmployeeId())
-                .orElseThrow(() -> new EntityNotFoundException("Not Found"));
+        Employee employee = employeeRepository.findById(orderDTO.getEmployee())
+                .orElseThrow(() -> new NotFoundException("Not Found"));
 
-        Customer customer = customerRepository.findById(orderDTO.getCustomerId())
-                .orElseThrow(() -> new EntityNotFoundException("Not Found"));
+        Customer customer = customerRepository.findById(orderDTO.getCustomer())
+                .orElseThrow(() -> new NotFoundException("Not Found"));
 
         Order orderEntity = new Order();
         orderEntity.setOrderStatus(OrderStatus.WAITING_PAYMENT);
@@ -48,7 +49,7 @@ public class OrderService {
 
         for (OrderItemDTO dto : orderDTO.getItems()) {
             Product product = productRepository.findById(dto.getProductId())
-                    .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+                    .orElseThrow(() -> new NotFoundException("Not Found"));
 
             OrderItem item = new OrderItem(
                     orderEntity,
@@ -64,9 +65,9 @@ public class OrderService {
     }
 
     public OrderDTO getOrderById(Long id) {
-        Order findOrder = orderRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Not Found"));
-
+        Order findOrder = orderRepository.findById(id).orElseThrow(() -> new NotFoundException("Not Found"));
+        OrderDTO orderDTO = new OrderDTO();
+        OrderItemDto orderItemDto = new OrderItemDto();
         List<OrderItem> orderItems = orderItemRepository.findAllByOrder(findOrder);
 
         OrderDTO orderDTO = new OrderDTO();
@@ -91,10 +92,8 @@ public class OrderService {
         return orderDTO;
     }
 
-    private double getTotalValue(long orderId) {
-        Order findOrder = orderRepository.findById(orderId).
-                orElseThrow(() -> new EntityNotFoundException("Order not found"));
-
+    private Double getTotalValue(long orderId) {
+        Order findOrder = orderRepository.findById((long) orderId).orElseThrow(() -> new NotFoundException("Not Found"));
         List<OrderItem> item = orderItemRepository.findAllByOrder(findOrder);
 
         double totalValue = 0.0;
