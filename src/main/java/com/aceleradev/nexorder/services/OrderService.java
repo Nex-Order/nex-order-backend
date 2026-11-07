@@ -1,38 +1,37 @@
 package com.aceleradev.nexorder.services;
 
 import com.aceleradev.nexorder.dtos.order.OrderDTO;
-import com.aceleradev.nexorder.dtos.orderitem.OrderItemDto;
+import com.aceleradev.nexorder.dtos.order.OrderResponse;
+import com.aceleradev.nexorder.dtos.orderitem.OrderItemDTO;
 import com.aceleradev.nexorder.commons.enums.OrderStatus;
+import com.aceleradev.nexorder.dtos.orderitem.OrderItemResponse;
 import com.aceleradev.nexorder.entities.*;
 import com.aceleradev.nexorder.exception.NotFoundException;
 import com.aceleradev.nexorder.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
 
-    @Autowired
-    private OrderItemRepository orderItemRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    @Autowired
-    private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
 
-    @Autowired
-    public EmployeeRepository employeeRepository;
+    private final EmployeeRepository employeeRepository;
 
-    @Autowired
-    public ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
+    @Transactional
     public Order createOrder(OrderDTO orderDTO) {
-        Order orderEntity = new Order();
-        OrderItem orderItemEntity = new OrderItem();
 
         Employee employee = employeeRepository.findById(orderDTO.getEmployee())
                 .orElseThrow(() -> new NotFoundException("Not Found"));
@@ -40,21 +39,26 @@ public class OrderService {
         Customer customer = customerRepository.findById(orderDTO.getCustomer())
                 .orElseThrow(() -> new NotFoundException("Not Found"));
 
+        Order orderEntity = new Order();
         orderEntity.setOrderStatus(OrderStatus.WAITING_PAYMENT);
-        orderEntity.setEmployeeId(employee);
-        orderEntity.setCustomerId(customer);
+        orderEntity.setEmployee(employee);
+        orderEntity.setCustomer(customer);
+        orderEntity.setMoment(ZonedDateTime.now());
 
         orderRepository.save(orderEntity);
 
-        for (OrderItemDto dto : orderDTO.getItems()) {
+        for (OrderItemDTO dto : orderDTO.getItems()) {
             Product product = productRepository.findById(dto.getProductId())
                     .orElseThrow(() -> new NotFoundException("Not Found"));
 
-            orderItemEntity.setOrderId(orderEntity);
-            orderItemEntity.setProduct(product);
-            orderItemEntity.setQuantity(dto.getQuantity());
-            orderItemEntity.setPrice(product.getPrice());
-            orderItemRepository.save(orderItemEntity);
+            OrderItem item = new OrderItem(
+                    orderEntity,
+                    product,
+                    dto.getQuantity(),
+                    product.getPrice()
+            );
+
+            orderItemRepository.save(item);
         }
 
         return orderEntity;
@@ -66,19 +70,23 @@ public class OrderService {
         OrderItemDto orderItemDto = new OrderItemDto();
         List<OrderItem> orderItems = orderItemRepository.findAllByOrder(findOrder);
 
+        OrderDTO orderDTO = new OrderDTO();
         orderDTO.setOrderStatus(findOrder.getOrderStatus().name());
-        orderDTO.setCustomerId(findOrder.getCustomerId().getId());
-        orderDTO.setEmployeeId(findOrder.getEmployeeId().getId());
+        orderDTO.setCustomerId(findOrder.getCustomer().getId());
+        orderDTO.setEmployeeId(findOrder.getEmployee().getId());
         orderDTO.setTotal(Math.round(getTotalValue(findOrder.getId()) * 100.00) / 100.00);
-        List<OrderItemDto> itemsList = orderItems.stream().map(item ->
-                {
-                    orderItemDto.setName(item.getProduct().getName());
-                    orderItemDto.setQuantity(item.getQuantity());
-                    orderItemDto.setProductId(item.getProduct().getId());
 
-                    return orderItemDto;
-                }
-        ).toList();
+        List<OrderItemDTO> itemsList = orderItems.stream().
+                map(item -> {
+                    OrderItemDTO dto = new OrderItemDTO();
+                    dto.setName(item.getProduct().getName());
+                    dto.setQuantity(item.getQuantity());
+                    dto.setProductId(item.getProduct().getId());
+
+                    return dto;
+                })
+                .toList();
+
         orderDTO.setItems(itemsList);
 
         return orderDTO;
@@ -87,12 +95,51 @@ public class OrderService {
     private Double getTotalValue(long orderId) {
         Order findOrder = orderRepository.findById((long) orderId).orElseThrow(() -> new NotFoundException("Not Found"));
         List<OrderItem> item = orderItemRepository.findAllByOrder(findOrder);
-        Double totalValue = 0.0;
-        for (int i = 0; i < item.size(); i++) {
-            int quantity  = item.get(i).getQuantity();
-            totalValue += item.get(i).getPrice()*quantity;
+
+        double totalValue = 0.0;
+
+        for (OrderItem orderItem : item) {
+            totalValue += orderItem.getPrice() * orderItem.getQuantity();
         }
         return totalValue;
     }
 
+    public OrderResponse getOrderResponseById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Order not found"));
+
+        List<OrderItem> items = orderItemRepository.findAllByOrder(order);
+
+        List<OrderItemResponse> itemResponses = items.stream()
+                .map(item -> new OrderItemResponse(
+                        item.getProduct().getId(),
+                        item.getProduct().getName(),
+                        item.getQuantity(),
+                        item.getPrice(),
+                        item.getPrice() * item.getQuantity()
+                ))
+                .toList();
+
+        double total = itemResponses.stream()
+                .mapToDouble(OrderItemResponse::subtotal)
+                .sum();
+
+        return new OrderResponse(
+                order.getId(),
+                order.getOrderStatus().name(),
+                order.getMoment(),
+                order.getCustomer().getId(),
+                order.getCustomer().getName(),
+                order.getEmployee().getId(),
+                order.getEmployee().getName(),
+                itemResponses,
+                total
+        );
+    }
+
+    public OrderResponse createOrderResponse(OrderDTO orderDTO) {
+        Order orderEntity = createOrder(orderDTO);
+        return getOrderResponseById(orderEntity.getId());
+    }
 }

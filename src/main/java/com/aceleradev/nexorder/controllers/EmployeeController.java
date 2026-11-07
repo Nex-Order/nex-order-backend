@@ -6,23 +6,22 @@ import com.aceleradev.nexorder.dtos.employee.EmployeeUpdateRequest;
 import com.aceleradev.nexorder.entities.Employee;
 import com.aceleradev.nexorder.mapper.EmployeeMapper;
 import com.aceleradev.nexorder.services.EmployeeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/employee")
+@RequiredArgsConstructor
 public class EmployeeController {
 
-    @Autowired
-    private EmployeeService service;
+    private final EmployeeService service;
 
-    @Autowired
-    private EmployeeMapper mapper;
+    private final EmployeeMapper mapper;
 
     @GetMapping
     public ResponseEntity<List<EmployeeResponse>> findAll() {

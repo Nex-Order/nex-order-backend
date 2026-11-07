@@ -2,11 +2,19 @@ package com.aceleradev.nexorder.entities;
 
 import com.aceleradev.nexorder.commons.enums.OrderStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tb_order")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,10 +34,20 @@ public class Order {
     @JoinColumn(name="employee_id")
     private Employee employee;
 
+    @Getter
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Payment payment;
 
-    public Order(Long id, ZonedDateTime moment, OrderStatus orderStatus, Customer customer, Employee employee){
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> items = new ArrayList<>();
+
+    public Order(
+            Long id,
+            ZonedDateTime moment,
+            OrderStatus orderStatus,
+            Customer customer,
+            Employee employee
+    ){
         this.id = id;
         this.moment = moment;
         this.orderStatus = orderStatus;
@@ -37,58 +55,13 @@ public class Order {
         this.employee = employee;
     }
 
-    public Order() {}
-
-    public Employee getEmployeeId() {
-        return employee;
-    }
-
-    public void setEmployeeId(Employee employeeId) {
-        this.employee = employeeId;
-    }
-
-    public Customer getCustomerId() {
-        return customer;
-    }
-
-    public void setCustomerId(Customer customerId) {
-        this.customer = customerId;
-    }
-
-    public ZonedDateTime getMoment() {
-        return moment;
-    }
-
-    public void setMoment(ZonedDateTime moment) {
-        this.moment = moment;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long orderId) {
-        this.id = orderId;
-    }
-
-    public Payment getPayment() {
-        return payment;
-    }
-
-    public void setPayment(Payment payment) {
-        this.payment = payment;
-    }
-
-    public OrderStatus getOrderStatus() {
-        return orderStatus;
-    }
-
-    public void setOrderStatus(OrderStatus orderStatus) {
-        this.orderStatus = orderStatus;
-    }
-
     public void addPayment(Payment payment) {
         this.payment = payment;
         payment.setOrder(this);
+    }
+
+    public void addItem(OrderItem item) {
+        this.items.add(item);
+        item.setOrder(this);
     }
 }

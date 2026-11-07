@@ -2,19 +2,19 @@ package com.aceleradev.nexorder.controllers;
 
 import com.aceleradev.nexorder.dtos.product.ProductDto;
 import com.aceleradev.nexorder.services.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(value = "/product")
+@RequiredArgsConstructor
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
 
     @GetMapping
     public ResponseEntity<List<ProductDto>> findAll(){

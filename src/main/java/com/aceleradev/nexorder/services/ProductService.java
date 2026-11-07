@@ -5,17 +5,17 @@ import com.aceleradev.nexorder.entities.Product;
 import com.aceleradev.nexorder.exception.NotFoundException;
 import com.aceleradev.nexorder.repositories.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
     public List<ProductDto> findAll() {
         List<Product> products = productRepository.findAll();
